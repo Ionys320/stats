@@ -14,6 +14,7 @@ Année: LU3IN026 - semestre 2 - 2024-2025, Sorbonne Université
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import string
 
 # ------------------------
 
@@ -124,30 +125,6 @@ def plot2DSet(desc, labels, nom_dataset="Dataset", avec_grid=False):
     plt.show()
 
 
-# plot_frontiere:
-# def plot_frontiere(desc_set, label_set, classifier, step=30):
-#     """desc_set * label_set * Classifier * int -> NoneType
-#     Remarque: le 4e argument est optionnel et donne la "résolution" du tracé: plus il est important
-#     et plus le tracé de la frontière sera précis.
-#     Cette fonction affiche la frontière de décision associée au classifieur
-#     """
-#     mmax = desc_set.max(0)
-#     mmin = desc_set.min(0)
-#     x1grid, x2grid = np.meshgrid(
-#         np.linspace(mmin[0], mmax[0], step), np.linspace(mmin[1], mmax[1], step)
-#     )
-#     grid = np.hstack((x1grid.reshape(x1grid.size, 1), x2grid.reshape(x2grid.size, 1)))
-
-#     # calcul de la prediction pour chaque point de la grille
-#     res = np.array([classifier.predict(grid[i, :]) for i in range(len(grid))])
-#     res = res.reshape(x1grid.shape)
-#     # tracer des frontieres
-#     # colors[0] est la couleur des -1 et colors[1] est la couleur des +1
-#     plt.contourf(
-#         x1grid, x2grid, res, colors=["darksalmon", "skyblue"], levels=[-1000, 0, 1000]
-#     )
-
-
 def plot_frontiere(desc_set, label_set, classifier, step=30):
     """desc_set * label_set * Classifier * int -> NoneType
     Remarque: le 4e argument est optionnel et donne la "résolution" du tracé: plus il est important
@@ -171,6 +148,67 @@ def plot_frontiere(desc_set, label_set, classifier, step=30):
     )
 
 
+def nettoyage(s: str):
+    """
+    Enlève les caractères polluant de s
+    """
+    bad_char = set(string.punctuation + string.whitespace) - {" ", "'"}
+
+    res = ""
+    for c in s.lower():
+        if c in bad_char:
+            res += " "
+        else:
+            res += c
+    return res
 
 
+def text2vect(s, mots_inutiles):
+    """
+    Nettoie la chaine et retire les mots inutiles
+    """
 
+    return [
+        w
+        for w in list(filter(lambda x: x not in mots_inutiles, nettoyage(s).split(" ")))
+        if w
+    ]
+
+
+def freq_dataset(data, Y_attr):
+    """
+    Calcule la fréquence de chaque classe du dataset
+    """
+
+    Y, counts = np.unique(data[Y_attr], return_counts=True)
+
+    freq = {int(y): float(f) for y, f in zip(Y, counts / len(data))}
+
+    return freq
+
+
+def sample_dataset(data, Y_attr, approx_size, seed=None):
+    """
+    Génère un échantillon d'une taille d'environ approx_size du dataset data en conservant la proportion des classes
+    """
+
+    if seed is not None:
+        rng = np.random.default_rng(seed)
+    else:
+        rng = np.random.default_rng()
+
+    freq = freq_dataset(data, Y_attr)
+
+    idx = []
+    for y, f in freq.items():
+        y_idx = np.where(data["target"] == y)[0]
+        rng.shuffle(y_idx)
+
+        # on prend la même proportion que dans le dataset d'origine
+        N = int(f * approx_size)
+        y_idx = y_idx[:N]
+
+        idx = idx + list(y_idx)
+
+    rng.shuffle(idx)
+    return data.iloc[idx]
