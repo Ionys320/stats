@@ -212,3 +212,12 @@ def sample_dataset(data, Y_attr, approx_size, seed=None):
 
     rng.shuffle(idx)
     return data.iloc[idx]
+
+def df2array(df, col, index_mots) -> np.array:
+    res = np.zeros((len(df), len(index_mots)))
+    for i in range(len(df)):
+        for mot in df[col].iloc[i]:
+            if mot in index_mots:
+                res[i][index_mots.index(mot)] += 1
+
+    return res
