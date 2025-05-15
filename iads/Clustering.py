@@ -199,7 +199,7 @@ def CHA_simple(df, verbose=False, dendrogramme=False):
 
     def distance_simple(cluster1, cluster2):
         """
-        d(cluster1, cluster2) = max{ d(a,b) : a dans cluster1 et b dans cluster2 }
+        d(cluster1, cluster2) = min{ d(a,b) : a dans cluster1 et b dans cluster2 }
         """
 
         return np.min([dist_euclidienne(cluster1.iloc[i], cluster2.iloc[j]) for i in range(len(cluster1)) for j in range(len(cluster2)) ])

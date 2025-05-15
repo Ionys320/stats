@@ -163,3 +163,4 @@ def validation_croisee(C, DS, nb_iter):
 
     moyenne, ecart_type = analyse_perfs(perf)
     return perf, moyenne, ecart_type
+

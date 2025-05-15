@@ -15,6 +15,10 @@ import pandas as pd
 import copy
 
 import graphviz as gv
+import utils as ut
+
+import random
+
 
 # ---------------------------
 
@@ -1080,10 +1084,7 @@ class ClassifierMultiOAABaggingTree(Classifier):
     def predict(self, x):
         scores = self.score(x)
         return max(scores, key=scores.get)
-    
-import random
 
-# ############################################## A COMPLETER 
 
 def tirage(VX, m, avecRemise=False):
     """ VX: vecteur d'indices 
@@ -1105,3 +1106,138 @@ def tirage(VX, m, avecRemise=False):
         indices.append(ind)
 
     return indices
+
+
+### Noyau
+
+
+# Astuce du noyau et projection
+
+#  CLasse (abstraite) pour représenter des noyaux
+class Kernel():
+    """ Classe pour représenter des fonctions noyau
+    """
+
+    def __init__(self, dim_in, dim_out):
+        """ Constructeur de Kernel
+            Argument:
+                - dim_in : dimension de l'espace de départ (entrée du noyau)
+                - dim_out: dimension de l'espace de d'arrivée (sortie du noyau)
+        """
+        self.input_dim = dim_in
+        self.output_dim = dim_out
+
+    def get_input_dim(self):
+        """ rend la dimension de l'espace de départ
+        """
+        return self.input_dim
+
+    def get_output_dim(self):
+        """ rend la dimension de l'espace d'arrivée
+        """
+        return self.output_dim
+
+    def transform(self, V):
+        """ ndarray -> ndarray
+            fonction pour transformer V dans le nouvel espace de représentation
+        """
+        raise NotImplementedError("Please Implement this method")
+
+
+class KernelBias(Kernel):
+    """ Classe pour un noyau simple 2D -> 3D
+    """
+
+    def __init__(self):
+        """ Constructeur de KernelBias
+            pas d'argument, les dimensions sont figées
+        """
+        #  Appel du constructeur de la classe mère
+        super().__init__(2, 3)
+
+    def transform(self, V):
+        """ ndarray de dim 2 -> ndarray de dim 3
+            rajoute une 3e dimension au vecteur donné
+        """
+
+        if (V.ndim == 1):  #  on regarde si c'est un vecteur ou une matrice
+            W = np.array([V])  #  conversion en matrice
+            V_proj = np.append(W, np.ones((len(W), 1)), axis=1)
+
+            V_proj = V_proj[0]  #  on rend quelque chose de la même dimension
+        else:
+            V_proj = np.append(V, np.ones((len(V), 1)), axis=1)
+
+        return V_proj
+
+
+class KernelPoly(Kernel):
+    def __init__(self):
+        """ Constructeur de KernelPoly
+            pas d'argument, les dimensions sont figées
+        """
+        #  Appel du constructeur de la classe mère
+        super().__init__(2, 6)
+
+    def transform(self, V):
+        """ ndarray de dim 2 -> ndarray de dim 6
+            ...
+        """
+
+        if (V.ndim == 1):  #  on regarde si c'est un vecteur ou une matrice
+            W = np.array([V])  # conversion en matrice
+            V_proj = np.hstack(([[1]], W, W ** 2, np.prod(W, axis=1).reshape(-1, 1)))
+
+            V_proj = V_proj[0]  #  on rend quelque chose de la même dimension
+        else:
+            V_proj = np.hstack((np.ones((len(V), 1)), V, V ** 2, np.prod(V, axis=1).reshape(-1, 1)))
+
+        return V_proj
+
+class ClassifierPerceptronKernel(ClassifierPerceptron):
+    """ Perceptron de Rosenblatt kernelisé
+    """
+
+    def __init__(self, input_dimension, learning_rate, noyau, init=0):
+        """ Constructeur de Classifier
+            Argument:
+                - input_dimension (int) : dimension de la description des exemples (espace originel)
+                - learning_rate : epsilon
+                - noyau : Kernel à utiliser
+                - init est le mode d'initialisation de w:
+                    - si 0 (par défaut): initialisation à 0 de w,
+                    - si 1 : initialisation par tirage aléatoire de valeurs petites
+        """
+        ClassifierPerceptron.__init__(self, noyau.output_dim, learning_rate, init)
+        self.noyau = noyau
+
+    def train_step(self, desc_set, label_set):
+        """ Réalise une unique itération sur tous les exemples du dataset
+            donné en prenant les exemples aléatoirement.
+            Arguments: (dans l'espace originel)
+                - desc_set: ndarray avec des descriptions
+                - label_set: ndarray avec les labels correspondants
+        """
+        idx = np.random.permutation(len(label_set))
+        Xm = desc_set[idx]
+        Ym = label_set[idx]
+
+        for x, y in zip(Xm, Ym):
+
+            p = self.predict(x)
+
+            if p != y:
+                ext_x = self.noyau.transform(x)
+                self.w += self.learning_rate * y * ext_x
+
+    def score(self, x):
+        """ rend le score de prédiction sur x
+            x: une description (dans l'espace originel)
+        """
+        # ext_w = self.noyau.transform(self.w)
+        ext_x = self.noyau.transform(x)
+
+        p = self.w @ ext_x
+
+        return p
+
