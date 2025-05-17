@@ -221,3 +221,21 @@ def df2array(df, col, index_mots) -> np.array:
                 res[i][index_mots.index(mot)] += 1
 
     return res
+
+def makeWordIndex(words):
+    """Make a word index from a list of words (pandas column)"""
+    word_index = set()
+    for i in range(len(words)):
+        e = words.iloc[i]
+        for w in np.unique(e):
+            word_index.add(str(w))
+
+    return list(word_index)
+
+def word2bitmap(index, word_vec):
+    """
+    Transform a word vector into a bitmap
+    """
+
+    # on créer un tableau de bool indiquant la présence puis on convertit en int
+    return np.isin(index, word_vec).astype(int)

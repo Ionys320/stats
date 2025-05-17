@@ -292,7 +292,8 @@ def CHA_average(df, verbose=False, dendrogramme=False):
 
 
 def CHA(DF,linkage='centroid', verbose=False,dendrogramme=False):
-    """  ##### donner une documentation à cette fonction
+    """
+    Algorithme du clustering hiérarchique ascendant
     """
     match linkage:
         case "centroid":
