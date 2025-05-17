@@ -15,7 +15,6 @@ import pandas as pd
 import copy
 
 import graphviz as gv
-import utils as ut
 
 import random
 
