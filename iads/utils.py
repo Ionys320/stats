@@ -15,6 +15,9 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import string
+import jax
+import jax.numpy as jnp
+from jax import jit
 
 # ------------------------
 
@@ -297,3 +300,42 @@ def dist_hamming(u,v):
     """
 
     return np.sum(u!=v)
+
+@jit
+def calcul_eigens(data):
+    data_jax = jnp.array(data)
+    data_centered = data_jax - jnp.mean(data_jax, axis=0)
+
+    cov = jnp.cov(data_centered, rowvar=False)
+    lam, V = jnp.linalg.eig(cov)
+
+    return lam, V
+
+
+@jit
+def projection2D(data, Y):
+
+    # 1) calcul des vecteurs propres
+
+    data_jax = jnp.array(data)
+    data_centered = data_jax - jnp.mean(data_jax, axis=0)
+
+    cov = jnp.cov(data_centered, rowvar=False)
+    lam, V = jnp.linalg.eig(cov)
+
+    #  3) tri et sélection des 2 vecteurs associés aux 2 plus grandes valeurs propres
+    idx = jnp.flip(jnp.argsort(lam))[:2]
+    best = V[idx]
+
+    proj =  data_centered @ best.T
+
+    for y in np.unique(Y):
+        mask = Y == y
+        plt.scatter(proj[mask, 0], proj[mask, 1])
+
+    #  ####################################
+    plt.legend(np.arange(10))
+    plt.show()
+    return proj
+
+
