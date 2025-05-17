@@ -18,6 +18,8 @@ import graphviz as gv
 
 import random
 
+from iads.Clustering import dist_euclidienne
+
 
 # ---------------------------
 
@@ -86,7 +88,7 @@ class ClassifierKNN(Classifier):
     Cette classe hérite de la classe Classifier
     """
 
-    def __init__(self, input_dimension, k):
+    def __init__(self, input_dimension, k, dist=dist_euclidienne):
         """Constructeur de Classifier
         Argument:
             - intput_dimension (int) : dimension d'entrée des exemples
@@ -95,26 +97,25 @@ class ClassifierKNN(Classifier):
         """
         Classifier.__init__(self, input_dimension)
         self.k = k
+        self.dist = dist
 
     def score(self, x):
-        """rend la proportion de +1 parmi les k ppv de x (valeur réelle)
+        """rend la proportion de chaque classe parmis les k ppv de x (valeur réelle)
         x: une description : un ndarray
         """
         # Calcul des distances entre x et les exemples du dataset:
-        distances = np.linalg.norm(self.desc_set - x, axis=1)
+        distances = [self.dist(x, ex) for ex in self.desc_set]
 
         # Tri des distances
         indices = np.argsort(distances)
 
-        # Calcul de la proportion de +1 parmi les k plus proches voisins:
         # Sélection des k plus proches voisins
         k_nearest_labels = self.label_set[indices[: self.k]]
 
-        # Calcul de la proportion de +1 parmi les k plus proches voisins
-        positive_count = np.sum(k_nearest_labels == +1)
-        proportion_positive = positive_count / self.k
+        # Calcul de la classe majoritaire parmis les k plus proche voisin
+        l, counts = np.unique(k_nearest_labels, return_counts=True)
 
-        return proportion_positive
+        return dict(zip(l, counts))
 
     def predict(self, x):
         """rend la prediction sur x (-1 ou +1)
@@ -123,8 +124,8 @@ class ClassifierKNN(Classifier):
         # Calcul du score
         score = self.score(x)
 
-        # Rendu de la prédiction
-        return +1 if score > 0.5 else -1
+        # On renvoi la classe majoritaire parmi les voisins
+        return max(score, key=score.get)
 
     def train(self, desc_set, label_set):
         """Permet d'entrainer le modele sur l'ensemble donné
@@ -148,7 +149,6 @@ class ClassifierLineaireRandom(Classifier):
         Hypothèse : input_dimension > 0
         """
         Classifier.__init__(self, input_dimension)
-        ########### A COMPLETER ###################
 
         v = np.random.uniform(-1, 1, (1, input_dimension))
         self.w = v / np.linalg.norm(v)

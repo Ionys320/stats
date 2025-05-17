@@ -220,15 +220,18 @@ def sample_dataset(data, Y_attr, approx_size, seed=None):
     Génère un échantillon d'une taille d'environ approx_size du dataset data en conservant la proportion des classes
     """
 
+    # on gère la seed
     if seed is not None:
         rng = np.random.default_rng(seed)
     else:
         rng = np.random.default_rng()
 
+    # fréquence de chaque classe
     freq = freq_dataset(data, Y_attr)
 
     idx = []
     for y, f in freq.items():
+        # on récupère les idx des exemples ayant la classe y
         y_idx = np.where(data["target"] == y)[0]
         rng.shuffle(y_idx)
 
@@ -236,12 +239,17 @@ def sample_dataset(data, Y_attr, approx_size, seed=None):
         N = int(f * approx_size)
         y_idx = y_idx[:N]
 
+        # on ajoute ces index à la liste
         idx = idx + list(y_idx)
 
     rng.shuffle(idx)
     return data.iloc[idx]
 
 def df2array(df, col, index_mots) -> np.array:
+    """
+    Transforme un dataset de mots en un dataset de bitvec
+    """
+
     res = np.zeros((len(df), len(index_mots)))
     for i in range(len(df)):
         for mot in df[col].iloc[i]:
@@ -267,3 +275,25 @@ def word2bitmap(index, word_vec):
 
     # on créer un tableau de bool indiquant la présence puis on convertit en int
     return np.isin(index, word_vec).astype(int)
+
+
+def dist_cosinus(u, v):
+    """
+    Calcule la distance cosinus entre u et v
+    d=1 - <u,v>/(N(u)N(v))
+    """
+
+    N = (np.linalg.norm(u)*np.linalg.norm(v))
+
+    if N == 0:
+        return 1
+
+    return 1 - (u@v)/N
+
+def dist_hamming(u,v):
+    """
+    Calcule la distance hamming entre u et v
+    Pre: u et v sont des vecteurs de bits
+    """
+
+    return np.sum(u!=v)
