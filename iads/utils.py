@@ -52,7 +52,35 @@ def create_XOR(n, var):
 
 
 # ------------------------ REPRENDRE ICI LES FONCTIONS SUIVANTES DU TME 2:
-# genere_dataset_uniform:
+def genere_train_test(desc_set, label_set, n_pos, n_neg):
+    """ permet de générer une base d'apprentissage et une base de test
+        desc_set: ndarray avec des descriptions
+        label_set: ndarray avec les labels correspondants
+        n_pos: nombre d'exemples de label +1 à mettre dans la base d'apprentissage
+        n_neg: nombre d'exemples de label -1 à mettre dans la base d'apprentissage
+        Hypothèses:
+           - desc_set et label_set ont le même nombre de lignes)
+           - n_pos et n_neg, ainsi que leur somme, sont inférieurs à n (le nombre d'exemples dans desc_set)
+    """
+    # Indice du premier élément de la classe -1
+    first_pos_i = label_set.tolist().index(1)
+    print(first_pos_i)
+
+    # Sélection aléatoire des indices de la base d'apprentissage
+    neg_i = random.sample([i for i in range(0, first_pos_i)], n_pos)
+    pos_i = random.sample([i for i in range(first_pos_i, desc_set.shape[0])], n_neg)
+    appr_i = pos_i + neg_i
+
+    # Indices de la base de test
+    test_i = list(set(range(desc_set.shape[0])) - set(appr_i))
+
+    # Création des bases d'apprentissage et de test
+    train_desc = desc_set[appr_i]
+    train_label = label_set[appr_i]
+    test_desc = desc_set[test_i]
+    test_label = label_set[test_i]
+
+    return (train_desc, train_label), (test_desc, test_label)
 
 
 def genere_dataset_uniform(d, n, binf=-1, bsup=1):

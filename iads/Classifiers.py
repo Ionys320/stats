@@ -332,9 +332,9 @@ class ClassifierMultiOAA(Classifier):
         self.cl = []
 
         for label in self.labels:
-            binary_labels = np.where(label_set == label, 1, -1)
+            Ytmp = np.where(label_set == label, 1, -1)
             clf = copy.deepcopy(self.cl_bin_template)
-            clf.train(desc_set, binary_labels)
+            clf.train(desc_set, Ytmp)
             self.cl.append(clf)
 
     def score(self, x):
