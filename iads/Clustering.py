@@ -45,6 +45,8 @@ def centroide(cluster):
     Calcule le centre de gravité des exemples du dataframe, définit par
     C = (e1 + e2 + ... + eN)/N
     """
+    if len(cluster) == 1:
+        return cluster.iloc[0]
 
     # Cela revient à faire la moyenne sur chaque colonne
     return np.mean(cluster, axis=0)
@@ -365,8 +367,8 @@ def nouveaux_centroides(Base, U):
 
     res = []
     for k in U:
-        c1, c2 = centroide(Base.iloc[U[k]])
-        res.append([c1, c2])
+        C = centroide(Base.iloc[U[k]])
+        res.append(C)
 
     return np.array(res)
 
