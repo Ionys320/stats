@@ -150,22 +150,22 @@ def crossval(X, Y, n_iterations, iteration):
 #     return (np.mean(L), np.std(L))
 #
 
-def validation_croisee(C, DS, nb_iter):
-    """ Classifieur * tuple[array, array] * int -> tuple[ list[float], float, float]
-    """
+# def validation_croisee(C, DS, nb_iter):
+#     """ Classifieur * tuple[array, array] * int -> tuple[ list[float], float, float]
+#     """
 
-    perf = []
+#     perf = []
 
-    for i in range(nb_iter):
-        cl = copy.deepcopy(C)
-        Xapp, Yapp, Xtest, Ytest = crossval(DS[0], DS[1], nb_iter, i)
-        cl.train(Xapp, Yapp)
-        perf.append(cl.accuracy(Xtest, Ytest))
-        print(
-            f"Itération {i} : taille base app = {len(Xapp)} taille base test = {len(Xtest)} Taux de bonne classif: {cl.accuracy(Xtest, Ytest)} ")
+#     for i in range(nb_iter):
+#         cl = copy.deepcopy(C)
+#         Xapp, Yapp, Xtest, Ytest = crossval(DS[0], DS[1], nb_iter, i)
+#         cl.train(Xapp, Yapp)
+#         perf.append(cl.accuracy(Xtest, Ytest))
+#         print(
+#             f"Itération {i} : taille base app = {len(Xapp)} taille base test = {len(Xtest)} Taux de bonne classif: {cl.accuracy(Xtest, Ytest)} ")
 
-    moyenne, ecart_type = analyse_perfs(perf)
-    return perf, moyenne, ecart_type
+#     moyenne, ecart_type = analyse_perfs(perf)
+#     return perf, moyenne, ecart_type
 
 
 

@@ -1265,29 +1265,29 @@ class ClassifierNaiveBayes(Classifier):
         for l in self.labels:
             self.frequences[l] = []
             indices_label = np.where(label_set == l)[0]
+            
+            # Calcul de la fréquence de chaque mot
             for i, mot in enumerate(self.LNoms):
                 if len(indices_label) > 0:
                     self.frequences[l].append(np.sum(desc_set[indices_label, i]))
                 else:
                     self.frequences[l].append(0)
 
+            # Normalisation
             if len(indices_label) > 0:
                 self.frequences[l] = np.array(self.frequences[l]) / len(indices_label)
             else:
                 self.frequences[l] = np.zeros(len(self.LNoms))
 
-    def score(self, ex):
+    def score(self, x):
         """ rend un score pour chaque label sous forme de dict
             ex: un exemple
         """
         scores = {}
         for l in self.labels:
-            # Calcul de la probabilité naïve pour chaque classe
             freq = self.frequences[l]
-            # Pour éviter les problèmes de log(0), on ajoute un epsilon
-            epsilon = 1e-9
-            freq = np.clip(freq, epsilon, 1 - epsilon)
-            scores[l] = np.sum(ex * np.log(freq) + (1 - ex) * np.log(1 - freq))
+            scores[l] = np.sum(x * np.log(freq) + (1 - x) * np.log(1 - freq)) # Application de la formule de Naive Bayes
+
         return scores
 
     def predict(self, x):
@@ -1303,9 +1303,12 @@ class ClassifierNaiveBayes(Classifier):
             label_set: ndarray avec les labels correspondants
             Hypothèse: desc_set et label_set ont le même nombre de lignes
         """
+        taille = desc_set.shape[0]
+
         nb_ok = 0
-        for i in range(desc_set.shape[0]):
+        for i in range(taille):
             if self.predict(desc_set[i, :]) == label_set[i]:
                 nb_ok += 1
-        acc = nb_ok / (desc_set.shape[0] * 1.0)
+
+        acc = nb_ok / (taille * 1.0)
         return acc
