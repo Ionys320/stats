@@ -28,26 +28,29 @@ def analyse_perfs(L):
     return moy, ecart
 
 #
-# def crossval(X, Y, n_iterations, iteration):
-#     # Mélange des index
-#     index = np.random.permutation(len(X))
-#     Xm = X[index]
-#     Ym = Y[index]
-#
-#     # Extraction des indexs pour le dataset de test
-#     test_it_idx = np.arange(
-#         iteration * len(X) // n_iterations, (iteration + 1) * len(X) // n_iterations - 1
-#     )
-#
-#     # Extraction des indexs restants pour le dataset d'apprentissage
-#     app_it_idx = np.setdiff1d(np.arange(len(X)), test_it_idx)
-#
-#     Xapp = Xm[app_it_idx]
-#     Yapp = Ym[app_it_idx]
-#     Xtest = Xm[test_it_idx]
-#     Ytest = Ym[test_it_idx]
-#
-#     return Xapp, Yapp, Xtest, Ytest
+def crossval(X, Y, n_iterations, iteration):
+    # Mélange des index
+    index = np.random.permutation(len(X))
+    Xm = X[index]
+    Ym = Y[index]
+
+    # Extraction des indexs pour le dataset de test
+    test_it_idx = np.arange(
+        iteration * len(X) // n_iterations, (iteration + 1) * len(X) // n_iterations - 1
+    )
+
+    # Extraction des indexs restants pour le dataset d'apprentissage
+    app_it_idx = np.setdiff1d(np.arange(len(X)), test_it_idx)
+
+    Xapp = Xm[app_it_idx]
+    Yapp = Ym[app_it_idx]
+    Xtest = Xm[test_it_idx]
+    Ytest = Ym[test_it_idx]
+
+    return Xapp, Yapp, Xtest, Ytest
+
+
+
 
 
 def crossval_strat(X, Y, n_iterations, iteration):
@@ -163,4 +166,6 @@ def validation_croisee(C, DS, nb_iter):
 
     moyenne, ecart_type = analyse_perfs(perf)
     return perf, moyenne, ecart_type
+
+
 

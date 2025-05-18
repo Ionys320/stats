@@ -18,6 +18,7 @@ import string
 import jax
 import jax.numpy as jnp
 from jax import jit
+import random
 
 # ------------------------
 
@@ -54,7 +55,6 @@ def create_XOR(n, var):
     return data_xor, np.array(label_xor)
 
 
-# ------------------------ REPRENDRE ICI LES FONCTIONS SUIVANTES DU TME 2:
 def genere_train_test(desc_set, label_set, n_pos, n_neg):
     """permet de générer une base d'apprentissage et une base de test
     desc_set: ndarray avec des descriptions
@@ -65,6 +65,7 @@ def genere_train_test(desc_set, label_set, n_pos, n_neg):
        - desc_set et label_set ont le même nombre de lignes)
        - n_pos et n_neg, ainsi que leur somme, sont inférieurs à n (le nombre d'exemples dans desc_set)
     """
+
     # Indice du premier élément de la classe -1
     first_pos_i = label_set.tolist().index(1)
     print(first_pos_i)
@@ -310,6 +311,9 @@ def dist_hamming(u, v):
 
 @jit
 def calcul_eigens(data):
+    """
+    Calcul des valeurs propres et des vecteurs propres
+    """
     data_jax = jnp.array(data)
 
     data_centered = data_jax - jnp.mean(data_jax, axis=0)
@@ -318,7 +322,7 @@ def calcul_eigens(data):
     cov = (cov + cov.T) / 2
 
     # utilisation de eigh pour exploiter la symétrie
-    # cov peut devenir hermitienne à cause d'erreurs de calcul donc il faut l'indiquer
+    # cov peut devenir hermitienne à cause d'erreurs de calcul donc il faut l'indiquer à Jax
     lam, V = jnp.linalg.eigh(cov)
 
     return lam, V, data_centered
@@ -336,14 +340,58 @@ def projection(data_centered, V):
     """
     Projette les données sur l'espace V
     """
+
+    # projection orthogonale sur le sous-espace
     return data_centered @ V.T
 
 
 def projectionND(data_centered, lam, V, N):
-    #  3) tri et sélection des N vecteurs associés aux 2 plus grandes valeurs propres en valeur absolue
+    """
+    Projette des données centrées sur ses N meilleurs composantes (PCA)
+    """
+
+    # on récupère les N meilleurs
     idx = pickNBestIdx(lam, N)
     best = V[idx]
 
+    # calcul de la projection
     proj = projection(data_centered, best)
 
     return proj
+
+def generate_train_test_MULTI(X, Y, train_ratio=0.8, seed=None):
+    """
+    Génère un ensemble d'apprentissage et un ensemble test
+    """
+
+    # on gère la seed
+    if seed is not None:
+        rng = np.random.default_rng(seed)
+    else:
+        rng = np.random.default_rng()
+
+    labels = np.unique(Y)
+
+    # déclaration des variables qui seront initialisées dans la boucle:
+    df_train = None
+    df_test = None
+    for l in labels:
+        nb_total = X['target'].value_counts()[l]
+        nb_pris = int(nb_total * train_ratio)
+        print(f"Nombre d'exemples du label {l} pris pour apprendre: {nb_pris}")
+
+        # on récupère les indices de label l
+        idx = X[X['target'] == l].index.to_list()
+        rng.shuffle(idx)
+
+        idx_train = idx[:nb_pris]
+        idx_test = idx[nb_pris:]
+
+        if df_train is None:
+            df_train = X.loc[idx_train]
+            df_test = X.loc[idx_test]
+        else:
+            df_train = pd.concat([df_train, X.loc[idx_train]])
+            df_test = pd.concat([df_test, X.loc[idx_test]])
+
+    return df_train, df_test

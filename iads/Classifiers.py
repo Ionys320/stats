@@ -106,6 +106,7 @@ class ClassifierKNN(Classifier):
         # Calcul des distances entre x et les exemples du dataset:
         distances = [self.dist(x, ex) for ex in self.desc_set]
 
+        # print(self.dist)
         # Tri des distances
         indices = np.argsort(distances)
 
