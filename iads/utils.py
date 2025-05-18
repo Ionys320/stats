@@ -308,7 +308,7 @@ def dist_hamming(u, v):
 
 ### Utilisation de jax pour paralléliser les calculs
 
-
+@jit
 def calcul_eigens(data):
     data_jax = jnp.array(data)
 

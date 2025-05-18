@@ -246,7 +246,7 @@ def CHA_simple(df, verbose=False, dendrogramme=False):
 
 def CHA_average(df, verbose=False, dendrogramme=False):
     """
-    Renvoi une liste de liste de la forme [[k1, k2, d, S]]
+    Renvoi une liste de liste de la forme [[k1, k2, d, S]] avec S la taille du nouveau cluster à chaque itération
     """
 
     def distance_average(cluster1, cluster2):
@@ -296,16 +296,19 @@ def CHA_average(df, verbose=False, dendrogramme=False):
 def CHA(DF,linkage='centroid', verbose=False,dendrogramme=False):
     """
     Algorithme du clustering hiérarchique ascendant
+    Renvoi une liste de liste de la forme [[k1, k2, d, S]] avec S la taille du nouveau cluster à chaque itération
     """
     match linkage:
         case "centroid":
-            CHA_centroid(DF, verbose=verbose, dendrogramme=dendrogramme)
+            return CHA_centroid(DF, verbose=verbose, dendrogramme=dendrogramme)
         case "complete":
-            CHA_complete(DF, verbose=verbose, dendrogramme=dendrogramme)
+            return CHA_complete(DF, verbose=verbose, dendrogramme=dendrogramme)
         case "simple":
-            CHA_simple(DF, verbose=verbose, dendrogramme=dendrogramme)
+            return CHA_simple(DF, verbose=verbose, dendrogramme=dendrogramme)
         case "average":
-            CHA_average(DF, verbose=False, dendrogramme=dendrogramme)
+            return CHA_average(DF, verbose=False, dendrogramme=dendrogramme)
+
+    return None
 
 # K-moyennes
 
