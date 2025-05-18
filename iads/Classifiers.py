@@ -1240,3 +1240,71 @@ class ClassifierPerceptronKernel(ClassifierPerceptron):
 
         return p
 
+class ClassifierNaiveBayes(Classifier):
+    """ Naive Bayes multi-classes
+    """
+    def __init__(self, input_dimension, labels, LNoms=[]):
+        """ Constructeur de Classifier
+            Argument:
+                - input_dimension (int) : nombre de mots (>0)  
+                - labels (list) : liste des labels possibles
+                - LNoms : liste des noms de features (colonnes) de description
+        """
+        Classifier.__init__(self, input_dimension)
+        self.frequences = dict()
+        self.labels = labels
+        self.LNoms = LNoms
+
+    def train(self, desc_set, label_set):
+        """ Permet d'entrainer le modele sur l'ensemble donné
+            desc_set: ndarray avec des descriptions
+            label_set: ndarray avec les labels correspondants
+            Hypothèse: desc_set et label_set ont le même nombre de lignes
+        """
+        for l in self.labels:
+            self.frequences[l] = []
+            indices_label = np.where(label_set == l)[0]
+            for i, mot in enumerate(self.LNoms):
+                if len(indices_label) > 0:
+                    self.frequences[l].append(np.sum(desc_set[indices_label, i]))
+                else:
+                    self.frequences[l].append(0)
+
+            if len(indices_label) > 0:
+                self.frequences[l] = np.array(self.frequences[l]) / len(indices_label)
+            else:
+                self.frequences[l] = np.zeros(len(self.LNoms))
+
+    def score(self, ex):
+        """ rend un score pour chaque label sous forme de dict
+            ex: un exemple
+        """
+        scores = {}
+        for l in self.labels:
+            # Calcul de la probabilité naïve pour chaque classe
+            freq = self.frequences[l]
+            # Pour éviter les problèmes de log(0), on ajoute un epsilon
+            epsilon = 1e-9
+            freq = np.clip(freq, epsilon, 1 - epsilon)
+            scores[l] = np.sum(ex * np.log(freq) + (1 - ex) * np.log(1 - freq))
+        return scores
+
+    def predict(self, x):
+        """ rend la prediction sur x (un label parmi self.labels)
+            x: un exemple
+        """
+        scores = self.score(x)
+        return max(scores, key=scores.get)
+
+    def accuracy(self, desc_set, label_set):
+        """ Permet de calculer la qualité du système sur un dataset donné
+            desc_set: ndarray avec des descriptions
+            label_set: ndarray avec les labels correspondants
+            Hypothèse: desc_set et label_set ont le même nombre de lignes
+        """
+        nb_ok = 0
+        for i in range(desc_set.shape[0]):
+            if self.predict(desc_set[i, :]) == label_set[i]:
+                nb_ok += 1
+        acc = nb_ok / (desc_set.shape[0] * 1.0)
+        return acc
