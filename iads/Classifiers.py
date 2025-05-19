@@ -1256,12 +1256,17 @@ class ClassifierNaiveBayes(Classifier):
         self.labels = labels
         self.LNoms = LNoms
 
+
     def train(self, desc_set, label_set):
         """ Permet d'entrainer le modele sur l'ensemble donné
             desc_set: ndarray avec des descriptions
             label_set: ndarray avec les labels correspondants
             Hypothèse: desc_set et label_set ont le même nombre de lignes
         """
+
+        y, counts = np.unique(label_set, return_counts=True)
+        self.Yfreq = dict(zip(y, counts/len(label_set)))
+
         for l in self.labels:
             self.frequences[l] = []
             indices_label = np.where(label_set == l)[0]
@@ -1269,6 +1274,7 @@ class ClassifierNaiveBayes(Classifier):
             # Calcul de la fréquence de chaque mot
             for i, mot in enumerate(self.LNoms):
                 if len(indices_label) > 0:
+                    # on fait la somme car vecteur binaire
                     self.frequences[l].append(np.sum(desc_set[indices_label, i]))
                 else:
                     self.frequences[l].append(0)
@@ -1285,8 +1291,13 @@ class ClassifierNaiveBayes(Classifier):
         """
         scores = {}
         for l in self.labels:
+            # proba de chaque mot | l
             freq = self.frequences[l]
-            scores[l] = np.sum(x * np.log(freq) + (1 - x) * np.log(1 - freq)) # Application de la formule de Naive Bayes
+
+            #calcul de p(x|Y)
+            p = np.prod([ freq[i] if mot in x else 1-freq[i]  for i, mot in enumerate(self.LNoms)])
+            scores[l] = p*self.Yfreq[l]
+            # scores[l] = np.sum(x * np.log(freq) + (1 - x) * np.log(1 - freq)) # Application de la formule de Naive Bayes
 
         return scores
 
