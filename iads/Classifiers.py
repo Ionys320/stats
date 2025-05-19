@@ -1297,7 +1297,6 @@ class ClassifierNaiveBayes(Classifier):
             #calcul de p(x|Y)
             p = np.prod([ freq[i] if mot in x else 1-freq[i]  for i, mot in enumerate(self.LNoms)])
             scores[l] = p*self.Yfreq[l]
-            # scores[l] = np.sum(x * np.log(freq) + (1 - x) * np.log(1 - freq)) # Application de la formule de Naive Bayes
 
         return scores
 

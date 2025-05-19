@@ -15,9 +15,9 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import string
-import jax
-import jax.numpy as jnp
-from jax import jit
+# import jax
+# import jax.numpy as jnp
+# from jax import jit
 import random
 
 # ------------------------
@@ -396,60 +396,60 @@ def generate_train_test_MULTI(X, Y, train_ratio=0.8, seed=None):
 
     return df_train, df_test
 
-def sample_dataset_binary(data, Y_attr, approx_size,cible, seed=None):
-    """
-    Génère un échantillon d'une taille d'environ approx_size du dataset data avec moitié cible et moitié -1
-    """
-    res = data.copy()
-    res["target"] = res["target"].map(lambda y: y if y == cible else -1)
+# def sample_dataset_binary(data, Y_attr, approx_size,cible, seed=None):
+#     """
+#     Génère un échantillon d'une taille d'environ approx_size du dataset data avec moitié cible et moitié -1
+#     """
+#     res = data.copy()
+#     res["target"] = res["target"].map(lambda y: y if y == cible else -1)
 
-    # on gère la seed
-    if seed is not None:
-        rng = np.random.default_rng(seed)
-    else:
-        rng = np.random.default_rng()
+#     # on gère la seed
+#     if seed is not None:
+#         rng = np.random.default_rng(seed)
+#     else:
+#         rng = np.random.default_rng()
 
-    n_cible = approx_size // 2
-    n_other = approx_size - n_cible
-    # fréquence de chaque classe
-    amount = {cible: n_cible, -1: n_other}
-
-
-    idx = []
-    for y, N in amount.items():
-        # on récupère les idx des exemples ayant la classe y
-        y_idx = np.where(res[Y_attr] == y)[0]
-        # print(len(y_idx))
-        rng.shuffle(y_idx)
-
-        # on prend la même proportion que dans le dataset d'origine
-        y_idx = y_idx[:N]
-
-        # on ajoute ces index à la liste
-        idx = idx + list(y_idx)
-
-    rng.shuffle(idx)
-    return res.iloc[idx]
+#     n_cible = approx_size // 2
+#     n_other = approx_size - n_cible
+#     # fréquence de chaque classe
+#     amount = {cible: n_cible, -1: n_other}
 
 
+#     idx = []
+#     for y, N in amount.items():
+#         # on récupère les idx des exemples ayant la classe y
+#         y_idx = np.where(res[Y_attr] == y)[0]
+#         # print(len(y_idx))
+#         rng.shuffle(y_idx)
 
-import matplotlib.cm as cm
+#         # on prend la même proportion que dans le dataset d'origine
+#         y_idx = y_idx[:N]
 
-def affiche_resultat_kmeans(Base,Centres,Affect):
-    """ DataFrame **2 * dict[int,list[int]] -> None
-    """
-    K = len(Centres)
+#         # on ajoute ces index à la liste
+#         idx = idx + list(y_idx)
 
-    # on transforme le colormap en couleurs utilisable par plt.scatter:
-    couleurs = cm.tab20(np.linspace(0, 1, K))
-
-    for k, c in zip(range(K), couleurs):
-
-        for i in range(len(Affect[k])):
-            idx = Affect[k][i]
-            x,y = Base.iloc[idx]
-
-            plt.scatter(x, y, color=c)
+#     rng.shuffle(idx)
+#     return res.iloc[idx]
 
 
-    plt.scatter(Centres[:,0],Centres[:,1],color='r',marker='x')
+
+# import matplotlib.cm as cm
+
+# def affiche_resultat_kmeans(Base,Centres,Affect):
+#     """ DataFrame **2 * dict[int,list[int]] -> None
+#     """
+#     K = len(Centres)
+
+#     # on transforme le colormap en couleurs utilisable par plt.scatter:
+#     couleurs = cm.tab20(np.linspace(0, 1, K))
+
+#     for k, c in zip(range(K), couleurs):
+
+#         for i in range(len(Affect[k])):
+#             idx = Affect[k][i]
+#             x,y = Base.iloc[idx]
+
+#             plt.scatter(x, y, color=c)
+
+
+#     plt.scatter(Centres[:,0],Centres[:,1],color='r',marker='x')
